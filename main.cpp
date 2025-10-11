@@ -1,15 +1,10 @@
 #include<GL/glut.h>
 #include<string.h>
-#include <cmath>
-float flowOffset1 = 0.0f;
-float flowOffset2 = 0.0f;
+
 int i,flag=0,flagb=1,flags=0,flagt=0,flagp=0,flagw=1,flagx=0,flagd=1;
 float a=0.0f,b=0.0f,c=0.0f,m=0.0f,n=0.0f,o=0.0f,p=0.0f,q=0.0f,r=0.0f,x=0.0f,y=0.0f,z=0.0f,a1=0.0,a2=0.0,a3=0.0;
 float j;
 float lighthouseAngle = 0.0f; // For rotating beam
-// Water boundaries (add this here)
-float waterTop = -0.5f;     // top of water
-float waterBottom = -1.0f;  // bottom of water
 
 
 void *currentfont;
@@ -91,52 +86,32 @@ void screen3()
 }
 
 
-// Function to draw the water surface
-void water() {
+void water()
+{
     glBegin(GL_QUADS);
-    glColor3f(0.0f, 0.4f, 0.7f); // water color
-    glVertex3f(-5.0f, -0.415f, 5.0f);
-    glVertex3f(5.0f, -0.415f, 5.0f);
-    glVertex3f(5.0f, -0.415f, -5.0f);
-    glVertex3f(-5.0f, -0.415f, -5.0f);
+    glColor3f(0.0,0.4,0.7);
+    glVertex3f(-5.0,-0.415,5.0);
+    glVertex3f(5.0,-0.415,5.0);
+    glVertex3f(5.0,-0.415,-5.0);
+    glVertex3f(-5.0,-0.415,-5.0);
     glEnd();
 }
 
-// Function to draw wavy flowing lines only over the water
-// Function to draw wavy flowing lines only over the water (top-to-bottom)
-void lines() {
-    float stepX = 0.05f;
-    float stepZ = 0.3f;
-
+void lines()
+{
+    float t1,t2;
     glBegin(GL_LINES);
-    for(float x = -5.0f; x <= 5.0f; x += stepX) {
-        for(float z = -5.0f; z <= 5.0f; z += stepZ) {
-
-            // Layer 1: small fast ripples
-            float y1 = -0.41f + 0.03f * sin(6.0f * z + flowOffset1);
-            float y2 = -0.41f + 0.03f * sin(6.0f * (z + stepZ) + flowOffset1);
-
-            glColor3f(0.0f, 0.45f, 0.75f); // ripple color
-            glVertex3f(x, y1, z);
-            glVertex3f(x, y2, z + stepZ);
-
-            // Layer 2: larger slower ripples
-            y1 = -0.41f + 0.06f * sin(3.0f * z + flowOffset2);
-            y2 = -0.41f + 0.06f * sin(3.0f * (z + stepZ) + flowOffset2);
-
-            glColor3f(0.0f, 0.45f, 0.75f);
-            glVertex3f(x, y1, z);
-            glVertex3f(x, y2, z + stepZ);
-        }
+    for(t1=0.0;t1<=10.0;t1+=0.4)
+    {
+     for(t2=0.0;t2<=10.0;t2+=0.4)
+     {
+       glColor3f(0.7,0.7,0.7);
+       glVertex3f(-5.0+t2,-0.41,-4.5+t1);
+       glVertex3f(-4.95+t2,-0.41,-4.5+t1);
+     }
     }
     glEnd();
-
-    // Increment offsets to animate the flow
-    flowOffset1 += 0.03f; // speed of small ripples
-    flowOffset2 += 0.02f; // speed of large ripples
 }
-
-
 
 void base()
 {
@@ -1285,13 +1260,6 @@ void update(int value)
     glutPostRedisplay();
     glutTimerFunc(100,update,0);
 }
-void updateFlow() {
-    flowOffset1 += 0.01f; // slower small ripples
-    flowOffset2 += 0.003f; // slower large ripples
-    if(flowOffset1 > 1000.0f) flowOffset1 = 0.0f;
-    if(flowOffset2 > 1000.0f) flowOffset2 = 0.0f;
-    glutPostRedisplay();
-}
 
 void display()
 {
@@ -1459,7 +1427,6 @@ int main(int argc,char **argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glEnable(GL_DEPTH_TEST);
     glutReshapeFunc(reshape);
-    glutIdleFunc(updateFlow);
     glutDisplayFunc(mydisplay);
     glutKeyboardFunc(mykeyboard);
     glutTimerFunc(200,update,0);

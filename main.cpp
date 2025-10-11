@@ -1,9 +1,8 @@
 #include<GL/glut.h>
 #include<string.h>
 #include <cmath>
-
-// Flow control variable
-float flowOffset = 0.0f;
+float flowOffset1 = 0.0f;
+float flowOffset2 = 0.0f;
 int i,flag=0,flagb=1,flags=0,flagt=0,flagp=0,flagw=1,flagx=0,flagd=1;
 float a=0.0f,b=0.0f,c=0.0f,m=0.0f,n=0.0f,o=0.0f,p=0.0f,q=0.0f,r=0.0f,x=0.0f,y=0.0f,z=0.0f,a1=0.0,a2=0.0,a3=0.0;
 float j;
@@ -102,26 +101,32 @@ void water() {
 
 // Function to draw wavy flowing lines only over the water
 void lines() {
-    float step = 0.3f;      // spacing between lines
-    float waveAmplitude = 0.05f; // height of the wave
-    float waveLength = 1.0f;     // wavelength of the wave
-    float speed = 2.0f;          // wave speed
+    float step = 0.3f;
 
     glBegin(GL_LINES);
-    for(float z = -5.0f; z <= 5.0f; z += step) {       // limit Z to water surface
-        for(float x = -5.0f; x <= 5.0f; x += 0.1f) {   // fine segments for smooth wave
-            glColor3f(0.7f, 0.7f, 0.7f); // line color
+    for(float z = -5.0f; z <= 5.0f; z += step) {
+        for(float x = -5.0f; x <= 5.0f; x += 0.05f) {
 
-            float y1 = -0.41f + waveAmplitude * sin(2 * 3.14159 * (x / waveLength) + flowOffset);
-            float y2 = -0.41f + waveAmplitude * sin(2 * 3.14159 * ((x + 0.05f) / waveLength) + flowOffset);
+            // Layer 1: small fast ripples
+            float y1 = -0.41f + 0.03f * sin(6.0f * x + flowOffset1);
+            float y2 = -0.41f + 0.03f * sin(6.0f * (x + 0.05f) + flowOffset1);
 
-            // horizontal line moving left to right
+            glColor3f(0.0f, 0.45f, 0.75f);
+            glVertex3f(x, y1, z);
+            glVertex3f(x + 0.05f, y2, z);
+
+            // Layer 2: larger slower ripples
+            y1 = -0.41f + 0.06f * sin(3.0f * x + flowOffset2);
+            y2 = -0.41f + 0.06f * sin(3.0f * (x + 0.05f) + flowOffset2);
+
+            glColor3f(0.0f, 0.45f, 0.75f);
             glVertex3f(x, y1, z);
             glVertex3f(x + 0.05f, y2, z);
         }
     }
     glEnd();
 }
+
 
 
 void base()
@@ -1272,9 +1277,11 @@ void update(int value)
     glutTimerFunc(100,update,0);
 }
 void updateFlow() {
-    flowOffset += 0.05f;            // controls speed of wave
-    if(flowOffset > 1000.0f) flowOffset = 0.0f; // prevent overflow
-    glutPostRedisplay();            // request redraw
+    flowOffset1 += 0.01f; // slower small ripples
+    flowOffset2 += 0.003f; // slower large ripples
+    if(flowOffset1 > 1000.0f) flowOffset1 = 0.0f;
+    if(flowOffset2 > 1000.0f) flowOffset2 = 0.0f;
+    glutPostRedisplay();
 }
 
 void display()

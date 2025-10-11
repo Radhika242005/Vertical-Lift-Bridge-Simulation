@@ -1,6 +1,9 @@
 #include<GL/glut.h>
 #include<string.h>
+#include <cmath>
 
+// Flow control variable
+float flowOffset = 0.0f;
 int i,flag=0,flagb=1,flags=0,flagt=0,flagp=0,flagw=1,flagx=0,flagd=1;
 float a=0.0f,b=0.0f,c=0.0f,m=0.0f,n=0.0f,o=0.0f,p=0.0f,q=0.0f,r=0.0f,x=0.0f,y=0.0f,z=0.0f,a1=0.0,a2=0.0,a3=0.0;
 float j;
@@ -86,32 +89,40 @@ void screen3()
 }
 
 
-void water()
-{
+// Function to draw the water surface
+void water() {
     glBegin(GL_QUADS);
-    glColor3f(0.0,0.4,0.7);
-    glVertex3f(-5.0,-0.415,5.0);
-    glVertex3f(5.0,-0.415,5.0);
-    glVertex3f(5.0,-0.415,-5.0);
-    glVertex3f(-5.0,-0.415,-5.0);
+    glColor3f(0.0f, 0.4f, 0.7f); // water color
+    glVertex3f(-5.0f, -0.415f, 5.0f);
+    glVertex3f(5.0f, -0.415f, 5.0f);
+    glVertex3f(5.0f, -0.415f, -5.0f);
+    glVertex3f(-5.0f, -0.415f, -5.0f);
     glEnd();
 }
 
-void lines()
-{
-    float t1,t2;
+// Function to draw wavy flowing lines only over the water
+void lines() {
+    float step = 0.3f;      // spacing between lines
+    float waveAmplitude = 0.05f; // height of the wave
+    float waveLength = 1.0f;     // wavelength of the wave
+    float speed = 2.0f;          // wave speed
+
     glBegin(GL_LINES);
-    for(t1=0.0;t1<=10.0;t1+=0.4)
-    {
-     for(t2=0.0;t2<=10.0;t2+=0.4)
-     {
-       glColor3f(0.7,0.7,0.7);
-       glVertex3f(-5.0+t2,-0.41,-4.5+t1);
-       glVertex3f(-4.95+t2,-0.41,-4.5+t1);
-     }
+    for(float z = -5.0f; z <= 5.0f; z += step) {       // limit Z to water surface
+        for(float x = -5.0f; x <= 5.0f; x += 0.1f) {   // fine segments for smooth wave
+            glColor3f(0.7f, 0.7f, 0.7f); // line color
+
+            float y1 = -0.41f + waveAmplitude * sin(2 * 3.14159 * (x / waveLength) + flowOffset);
+            float y2 = -0.41f + waveAmplitude * sin(2 * 3.14159 * ((x + 0.05f) / waveLength) + flowOffset);
+
+            // horizontal line moving left to right
+            glVertex3f(x, y1, z);
+            glVertex3f(x + 0.05f, y2, z);
+        }
     }
     glEnd();
 }
+
 
 void base()
 {
@@ -1260,6 +1271,11 @@ void update(int value)
     glutPostRedisplay();
     glutTimerFunc(100,update,0);
 }
+void updateFlow() {
+    flowOffset += 0.05f;            // controls speed of wave
+    if(flowOffset > 1000.0f) flowOffset = 0.0f; // prevent overflow
+    glutPostRedisplay();            // request redraw
+}
 
 void display()
 {
@@ -1427,6 +1443,7 @@ int main(int argc,char **argv)
     glClearColor(0.0,0.0,0.0,0.0);
     glEnable(GL_DEPTH_TEST);
     glutReshapeFunc(reshape);
+    glutIdleFunc(updateFlow);
     glutDisplayFunc(mydisplay);
     glutKeyboardFunc(mykeyboard);
     glutTimerFunc(200,update,0);

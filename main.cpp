@@ -7,8 +7,12 @@ int i,flag=0,flagb=1,flags=0,flagt=0,flagp=0,flagw=1,flagx=0,flagd=1;
 float a=0.0f,b=0.0f,c=0.0f,m=0.0f,n=0.0f,o=0.0f,p=0.0f,q=0.0f,r=0.0f,x=0.0f,y=0.0f,z=0.0f,a1=0.0,a2=0.0,a3=0.0;
 float j;
 float lighthouseAngle = 0.0f; // For rotating beam
-
-
+float shipDirX = 0.7f; // example: ship moving diagonally
+float shipDirZ = 0.7f;
+float shipAngle = 45.0f; // ship heading in degrees
+float flowOffset = 0.0f;
+float shipX = 0.0f;
+float shipZ = 0.0f;
 void *currentfont;
 
 void setFont(void *font)
@@ -87,11 +91,15 @@ void screen3()
     glFlush();
 }
 
-
+void updateShipDirection() {
+    float rad = shipAngle * 3.14159f / 180.0f;
+    shipDirX = cos(rad);
+    shipDirZ = sin(rad);
+}
 // Function to draw the water surface
 void water() {
     glBegin(GL_QUADS);
-    glColor3f(0.0f, 0.4f, 0.7f); // water color
+    glColor3f(0.0f, 0.4f, 0.7f); // water
     glVertex3f(-5.0f, -0.415f, 5.0f);
     glVertex3f(5.0f, -0.415f, 5.0f);
     glVertex3f(5.0f, -0.415f, -5.0f);
@@ -99,35 +107,39 @@ void water() {
     glEnd();
 }
 
-// Function to draw wavy flowing lines only over the water
+// Draw flowing ripples (wake) behind ship
 void lines() {
     float step = 0.3f;
 
     glBegin(GL_LINES);
     for(float z = -5.0f; z <= 5.0f; z += step) {
         for(float x = -5.0f; x <= 5.0f; x += 0.05f) {
+            // Calculate relative position to ship
+            float relX = x - shipX;
+            float relZ = z - shipZ;
 
-            // Layer 1: small fast ripples
-            float y1 = -0.41f + 0.03f * sin(6.0f * x + flowOffset1);
-            float y2 = -0.41f + 0.03f * sin(6.0f * (x + 0.05f) + flowOffset1);
+            // Project position along ship direction for wake flow
+            float flowPos = -(relX * shipDirX + relZ * shipDirZ) + flowOffset;
 
-            glColor3f(0.0f, 0.45f, 0.75f);
+            // Small ripples
+            float y1 = -0.41f + 0.03f * sin(6.0f * flowPos);
+            float y2 = -0.41f + 0.03f * sin(6.0f * (flowPos + 0.05f));
+
+           glColor3f(0.0f, 0.2f, 0.5f);
             glVertex3f(x, y1, z);
             glVertex3f(x + 0.05f, y2, z);
 
-            // Layer 2: larger slower ripples
-            y1 = -0.41f + 0.06f * sin(3.0f * x + flowOffset2);
-            y2 = -0.41f + 0.06f * sin(3.0f * (x + 0.05f) + flowOffset2);
+            // Large ripples
+            y1 = -0.41f + 0.06f * sin(3.0f * flowPos);
+            y2 = -0.41f + 0.06f * sin(3.0f * (flowPos + 0.05f));
 
-            glColor3f(0.0f, 0.45f, 0.75f);
+              glColor3f(0.0f, 0.2f, 0.5f);
             glVertex3f(x, y1, z);
             glVertex3f(x + 0.05f, y2, z);
         }
     }
     glEnd();
 }
-
-
 
 void base()
 {
@@ -1277,8 +1289,8 @@ void update(int value)
     glutTimerFunc(100,update,0);
 }
 void updateFlow() {
-    flowOffset1 += 0.01f; // slower small ripples
-    flowOffset2 += 0.003f; // slower large ripples
+    flowOffset1 += 0.1f; // slower small ripples
+    flowOffset2 += 0.95f; // slower large ripples
     if(flowOffset1 > 1000.0f) flowOffset1 = 0.0f;
     if(flowOffset2 > 1000.0f) flowOffset2 = 0.0f;
     glutPostRedisplay();
